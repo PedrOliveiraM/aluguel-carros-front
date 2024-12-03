@@ -1,17 +1,19 @@
-import { Header } from '@/components/Header'
 import type { Metadata } from 'next'
 import localFont from 'next/font/local'
 import './globals.css'
+import { Template } from './Template'
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
   variable: '--font-geist-sans',
   weight: '100 900',
+  fallback: ['Arial', 'sans-serif'],
 })
 const geistMono = localFont({
   src: './fonts/GeistMonoVF.woff',
   variable: '--font-geist-mono',
   weight: '100 900',
+  fallback: ['Courier', 'monospace'],
 })
 
 export const metadata: Metadata = {
@@ -29,8 +31,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Header />
-        {children}
+        <Template>{children}</Template>
       </body>
     </html>
   )

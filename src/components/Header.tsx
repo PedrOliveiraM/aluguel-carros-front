@@ -1,7 +1,8 @@
+'use client'
 import { Menubar, MenubarMenu, MenubarTrigger } from '@/components/ui/menubar'
 import Link from 'next/link'
 
-export async function Header() {
+export function Header() {
   return (
     <Menubar>
       <MenubarMenu>
