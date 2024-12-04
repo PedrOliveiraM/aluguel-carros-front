@@ -1,7 +1,14 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  /* config options here */
-};
+  rewrites() {
+    return Promise.resolve([
+      {
+        source: '/api/:path*',
+        destination: 'https://backend.thlm.site/api/:path*',
+      },
+    ])
+  },
+}
 
-export default nextConfig;
+export default nextConfig

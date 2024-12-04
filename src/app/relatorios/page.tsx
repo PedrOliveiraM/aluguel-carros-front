@@ -7,6 +7,7 @@ import {
   ChartTooltipContent,
 } from '@/components/ui/chart'
 import { Car, DollarSign, Wrench } from 'lucide-react'
+import { useEffect } from 'react'
 import { Line, LineChart, ResponsiveContainer, XAxis, YAxis } from 'recharts'
 
 // Sample data for the charts
@@ -31,31 +32,61 @@ const dailyRevenueData = [
 ]
 
 export default function Reports() {
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fazendo o fetch da API
+        const response = await fetch(`https://backend.thlm.site/api/getMarcas`)
+
+        console.log('result: ', await response.json())
+        // Verificando se a resposta foi bem-sucedida
+        if (!response.ok) {
+          throw new Error('Falha na requisição')
+        }
+
+        // Convertendo a resposta para JSON
+        const result = await response.json()
+
+        console.log('result: ', result)
+      } catch (error) {
+        console.log(error)
+      } finally {
+        console.log('Finalizado')
+      }
+    }
+
+    fetchData() // Chamando a função fetchData
+  }, [])
+
   return (
     <div className="space-y-6 p-6">
-      <h2 className="text-3xl font-bold text-white">Relatórios</h2>
+      <h2 className="text-3xl font-bold text-black">Relatórios</h2>
 
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Locação / Dia</CardTitle>
+            <CardTitle className="text-sm font-medium">Modelos</CardTitle>
             <Car className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">15</div>
-            <p className="text-xs text-muted-foreground">+2% from last week</p>
+            <p className="text-xs text-muted-foreground">
+              +2% em relação a semana passada
+            </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">
-              Number of Maintenance
+              Número de Manutenções
             </CardTitle>
             <Wrench className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">3</div>
-            <p className="text-xs text-muted-foreground">-1 from last week</p>
+            <p className="text-xs text-muted-foreground">
+              +1 em relação a semana passada
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -65,7 +96,9 @@ export default function Reports() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">$1,500</div>
-            <p className="text-xs text-muted-foreground">+15% from last week</p>
+            <p className="text-xs text-muted-foreground">
+              +15% em relação a semana passada
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -73,7 +106,7 @@ export default function Reports() {
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Daily Rentals</CardTitle>
+            <CardTitle>Aluguel diário</CardTitle>
           </CardHeader>
           <CardContent>
             <ChartContainer
@@ -103,7 +136,7 @@ export default function Reports() {
         </Card>
         <Card>
           <CardHeader>
-            <CardTitle>Daily Revenue</CardTitle>
+            <CardTitle>Receita diária</CardTitle>
           </CardHeader>
           <CardContent>
             <ChartContainer
