@@ -2,5 +2,13 @@
   "extends": [
     "@rocketseat/eslint-config/next", 
     "next/core-web-vitals"
-  ]
+  ],
+    
+  "rules": {
+    "no-use-before-define": [
+      "error",
+      { "functions": false, "classes": false, "variables": false, "typedefs": false }
+    ]
+  }
+  
 }
