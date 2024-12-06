@@ -1,4 +1,4 @@
-import { Manutencao, Marca, Ocorrencia, Pagamento, Veiculo } from "@/types/schemas";
+import { ContratoLocacao, Manutencao, Marca, Modelo, Ocorrencia, Pagamento, Veiculo } from "@/types/schemas";
 
 export const fetchDataMarcas = async (): Promise<Marca[]> => {
     try {
@@ -17,6 +17,33 @@ export const fetchDataMarcas = async (): Promise<Marca[]> => {
         return [];
     }
 };
+
+export const fetchDataModelos = async (IdMarca?: string): Promise<Modelo[]> => {
+    try {
+        // Obtém todos os modelos, mesmo sem filtro
+        const response = await fetch(`https://backend.thlm.site/api/getModelos`);
+        const result = await response.json();    
+        if (IdMarca) {
+            const modelosFiltrados = result.filter((modelo: Modelo) => modelo.marcaId === Number(IdMarca));
+            const nomesUnicos = new Set<string>();
+            const modelosSemDuplicados = modelosFiltrados.filter((modelo: { nome: string; }) => {
+              if (nomesUnicos.has(modelo.nome)) {
+                return false;
+              } else {
+                nomesUnicos.add(modelo.nome);
+                return true;
+              }
+            });
+            console.log("Modelos filtrados por marca sem duplicados: ", modelosSemDuplicados);
+            return modelosSemDuplicados;
+          }
+    
+        return result as Modelo[];
+      } catch (error) {
+        console.error("Erro ao buscar modelos: ", error);
+        return [];
+      }
+}
 
 
 export const fetchDataVeiculos = async (): Promise<Veiculo[]> => {
@@ -66,5 +93,16 @@ export const fetchDataPagamentos = async (): Promise<Pagamento[]> => {
         return result as Pagamento[];
     } catch (error) {
         return [];
+    }
+};
+
+export const fetchDataContratos = async (IdContrato: string): Promise<ContratoLocacao> => {
+    try {
+        const response = await fetch(`https://backend.thlm.site/api/getContratoLocacao/${IdContrato}`);
+        const result = await response.json();
+        console.log('Contrato: ', result);
+        return result as ContratoLocacao;
+    } catch (error) {
+        return {} as ContratoLocacao;
     }
 };

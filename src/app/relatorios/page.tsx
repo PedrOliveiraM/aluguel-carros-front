@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/chart'
 import {
   fetchDataManutencoes,
-  fetchDataMarcas,
+  fetchDataMarcas, 
   fetchDataOcorrencias,
   fetchDataPagamentos,
   fetchDataVeiculos,

@@ -1,6 +1,108 @@
-import React from 'react';
+'use client'
+
+import { fetchDataContratos, fetchDataMarcas, fetchDataModelos } from '@/http/api';
+import { ContratoLocacao, Marca, Modelo } from '@/types/schemas';
+import React, { use, useEffect, useState } from 'react';
+
+interface ContratoLocacaoCharge {
+  dataLocacao: Date;
+  dataDevolucao: Date;
+  locatario: string;
+  marcaVeiculo: number;
+  valorLocacao: number;
+  valorOcorrencia: number;
+  valorTotal: number;
+}
 
 const Devolucao = () => {
+
+  const [Contratos, setContratos] = useState<ContratoLocacao>();
+  const [IdContrato, setIdContrato] = useState<string | null>(null);
+  const [Marcas, setMarcas] = useState<Marca[]>([]);
+  const [Modelos, setModelos] = useState<Modelo[]>([]);
+  const [ModeloSelecionado, setModeloSelecionado] = useState<Modelo>();
+  const [ContratoCharge, setContratoCharge] = useState<ContratoLocacaoCharge>();
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setContratos(await fetchDataContratos(IdContrato?.toString() || ''));
+      } catch (error) {
+        console.error('Erro ao buscar dados:', error);
+      }
+    };
+
+    if (IdContrato !== null && IdContrato !== '' && /^[0-9]+$/.test(IdContrato)) {
+      fetchData();
+    }
+  }, [IdContrato]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setMarcas(await fetchDataMarcas());
+      } catch (error) {
+        console.error('Erro ao buscar dados:', error);
+      }
+    };
+
+    fetchData();
+
+  }, []);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setModelos(await fetchDataModelos(ContratoCharge?.marcaVeiculo?.toString()));
+      } catch (error) {
+        console.error('Erro ao buscar dados:', error);
+      }
+    };
+
+    fetchData();
+
+  }, [ContratoCharge?.marcaVeiculo]);
+
+
+  const handleModeloChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const modeloId = Number(e.target.value);
+
+    const modeloSelecionado = Modelos.find((modelo) => modelo.id === modeloId);
+    setModeloSelecionado(modeloSelecionado);
+
+    if (modeloSelecionado && ContratoCharge && ContratoCharge.dataLocacao && ContratoCharge.dataDevolucao) {
+      // Calcula a diferença em dias entre dataLocacao e dataDevolucao
+      const dataInicio = new Date(ContratoCharge.dataLocacao);
+      const dataFim = new Date(ContratoCharge.dataDevolucao);
+      const dias = Math.ceil((dataFim.getTime() - dataInicio.getTime()) / (1000 * 60 * 60 * 24)); // Diferença em dias
+
+      // Calcula o valor total da locação
+      const valorTotal = dias * modeloSelecionado.categoria.valorLocacao;
+
+      // Atualiza o estado com o modelo selecionado e o valor de locação calculado
+      setContratoCharge((prevState) => ({
+        ...prevState!,
+        marcaVeiculo: modeloId, // Atualiza o ID do veículo selecionado
+        valorLocacao: valorTotal, // Atualiza o valor de locação
+      }));
+    }
+  };
+
+  const Calcular = () => {
+    if (ContratoCharge && ContratoCharge.dataLocacao && ContratoCharge.dataDevolucao) {
+      // Calcula a diferença em dias entre dataLocacao e dataDevolucao
+      const dataInicio = new Date(ContratoCharge.dataLocacao);
+      const dataFim = new Date(ContratoCharge.dataDevolucao);
+      const dias = Math.ceil((dataFim.getTime() - dataInicio.getTime()) / (1000 * 60 * 60 * 24)); // Diferença em dias
+
+      // Calcula o valor total da locação
+      const valorTotal = dias * (ModeloSelecionado?.categoria?.valorLocacao ?? 0);
+
+      // Atualiza o estado com o valor total calculado
+      setContratoCharge((prevState) => ({
+        ...prevState!,
+        valorLocacao: valorTotal, // Atualiza o valor total
+      }));
+    }
+  }
   return (
     <div className="flex flex-col min-w-full min-h-screen bg-white text-gray-900 p-4">
       <div className="flex flex-col flex-grow w-full">
@@ -13,6 +115,8 @@ const Devolucao = () => {
               <div className="flex">
                 <input
                   type="text"
+                  value={IdContrato ?? ''}
+                  onChange={(e) => setIdContrato(e.target.value)}
                   className="flex-1 p-2 bg-gray-200 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Digite o ID da locação"
                 />
@@ -26,6 +130,19 @@ const Devolucao = () => {
                 <label className="block mb-1 text-sm text-gray-700">Data de Locação:</label>
                 <input
                   type="date"
+                  value={
+                    Contratos?.dataLocacao
+                      ? new Date(Contratos.dataLocacao).toISOString().split('T')[0] // Pega apenas a data no formato YYYY-MM-DD
+                      : ContratoCharge?.dataLocacao
+                      ? new Date(ContratoCharge.dataLocacao).toISOString().split('T')[0]
+                      : ''
+                  }
+                  onChange={(e) =>
+                    setContratoCharge((prevState) => ({
+                      ...prevState!,
+                      dataLocacao: new Date(e.target.value), // Certifique-se de que o valor seja tratado como número
+                    }))
+                  }
                   className="w-full p-2 bg-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -33,6 +150,19 @@ const Devolucao = () => {
                 <label className="block mb-1 text-sm text-gray-700">Data Prevista para Devolução:</label>
                 <input
                   type="date"
+                  value={
+                    Contratos?.dataDevolucao
+                      ? new Date(Contratos.dataDevolucao).toISOString().split('T')[0] // Pega apenas a data no formato YYYY-MM-DD
+                      : ContratoCharge?.dataDevolucao
+                      ? new Date(ContratoCharge.dataDevolucao).toISOString().split('T')[0]
+                      : ''
+                  }
+                  onChange={(e) =>
+                    setContratoCharge((prevState) => ({
+                      ...prevState!,
+                      dataDevolucao: new Date(e.target.value), // Certifique-se de que o valor seja tratado como número
+                    }))
+                  }
                   className="w-full p-2 bg-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
@@ -58,8 +188,44 @@ const Devolucao = () => {
                 placeholder="Nome do locatário"
               />
             </div>
+            <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 w-full">
+            <div className="mb-4">
+              <label className="block mb-1 text-sm text-gray-700">Marca do Veiculo:</label>
+              <select
+                className="w-full p-2 bg-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onChange={(e) =>
+                  setContratoCharge((prevState) => ({
+                    ...prevState!,
+                    marcaVeiculo: Number(e.target.value), // Certifique-se de que o valor seja tratado como número
+                  }))
+                }
+              >
+                <option value="">Selecione a Marca</option>
+                {Marcas.map((marca) => (
+                  <option key={marca.id} value={marca.id}>
+                    {marca.nome}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div className="mb-4">
+              <label className="block mb-1 text-sm text-gray-700">Veiculo:</label>
+              <select
+                className="w-full p-2 bg-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                onChange={handleModeloChange}
+              >
+                <option value="">Selecione o Veiculo</option>
+                {Modelos.map((marca) => (
+                  <option key={marca.id} value={marca.id}>
+                    {marca.nome}
+                  </option>
+                ))}
+              </select>
+            </div>
+            </div>
             <div className="flex flex-col lg:flex-row lg:justify-between gap-4">
-              <button className="w-full lg:w-auto bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+              <button className="w-full lg:w-auto bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600" 
+              onClick={Calcular}>
                 Calcular Contrato (R$)
               </button>
               <button className="w-full lg:w-auto bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600">
@@ -72,7 +238,7 @@ const Devolucao = () => {
           <div className="bg-gray-100 p-6 rounded-lg shadow-md w-full">
             <div className="text-center mb-8">
               <h2 className="text-lg font-bold text-gray-700">Total a Pagar (R$):</h2>
-              <p className="text-4xl font-bold text-gray-900">R$ 29.000,00</p>
+              <p className="text-4xl font-bold text-gray-900">{ContratoCharge?.valorLocacao}</p>
             </div>
             <div className="space-y-4">
               <button className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600">
@@ -128,3 +294,4 @@ const Devolucao = () => {
 };
 
 export default Devolucao;
+
