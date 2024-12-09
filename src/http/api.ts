@@ -1,4 +1,4 @@
-import { ContratoLocacao, Manutencao, Marca, Modelo, Ocorrencia, Pagamento, Veiculo } from "@/types/schemas";
+import { ContratoLocacao, Manutencao, Marca, Modelo, Ocorrencia, Pagamento, PostContratoLocacao, Veiculo } from "@/types/schemas";
 
 export const fetchDataMarcas = async (): Promise<Marca[]> => {
     try {
@@ -106,3 +106,19 @@ export const fetchDataContratos = async (IdContrato: string): Promise<ContratoLo
         return {} as ContratoLocacao;
     }
 };
+
+export const postContrato = async (contrato: PostContratoLocacao): Promise<boolean> => {
+    try {
+        const response = await fetch(`https://backend.thlm.site/api/createContratoLocacao`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(contrato)
+        });
+
+        return response.ok;
+    } catch (error) {
+        return false;
+    }
+}

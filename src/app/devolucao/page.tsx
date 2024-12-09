@@ -1,6 +1,6 @@
 'use client'
 
-import { fetchDataContratos, fetchDataMarcas, fetchDataModelos } from '@/http/api';
+import { fetchDataContratos, fetchDataMarcas, fetchDataModelos, postContrato } from '@/http/api';
 import { ContratoLocacao, Marca, Modelo } from '@/types/schemas';
 import React, { use, useEffect, useState } from 'react';
 
@@ -12,6 +12,8 @@ interface ContratoLocacaoCharge {
   valorLocacao: number;
   valorOcorrencia: number;
   valorTotal: number;
+  status: string;
+  valorCaucao: number;
 }
 
 const Devolucao = () => {
@@ -103,6 +105,25 @@ const Devolucao = () => {
       }));
     }
   }
+
+  const Finalizar = async () => {
+    if (ContratoCharge) {
+      try{
+        setContratoCharge((prevState) => ({
+          ...prevState!,
+          status: 'Alugado',
+          valorCaucao: 0,
+        }));
+        await postContrato(ContratoCharge);
+        
+      }catch(error){
+        console.error('Erro ao finalizar contrato:', error);
+      }
+    }
+  }
+
+
+    
   return (
     <div className="flex flex-col min-w-full min-h-screen bg-white text-gray-900 p-4">
       <div className="flex flex-col flex-grow w-full">
@@ -184,6 +205,7 @@ const Devolucao = () => {
               <label className="block mb-1 text-sm text-gray-700">Nome do Locatário:</label>
               <input
                 type="text"
+                value={ContratoCharge?.locatario ?? ''}
                 className="w-full p-2 bg-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Nome do locatário"
               />

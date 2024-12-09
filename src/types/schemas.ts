@@ -75,3 +75,10 @@ export interface ContratoLocacao {
   ocorrencias: Ocorrencia[]
   pagamentos: Pagamento[]
 }
+export interface PostContratoLocacao {
+  dataLocacao: Date
+  dataDevolucao: Date
+  valorCaucao: number
+  valorTotal: number
+  status: string
+}
